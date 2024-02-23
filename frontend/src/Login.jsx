@@ -61,9 +61,9 @@ const Login = () => {
            `http://localhost:5000/signup` ,
           values,
       ).then((res)=>{
-        console.log(res.data)
+        console.log(res?.data)
         Swal.fire({
-          title: res.data.message,
+          title: res?.data?.message,
           icon: 'success', 
           confirmButtonText: 'Ok',
         });
@@ -71,7 +71,7 @@ const Login = () => {
       }).catch((err) =>{
        console.log(err)
        Swal.fire({
-          title: err.response.data.msg,
+          title: err?.response?.data?.msg,
           icon: 'failure', 
           confirmButtonText: 'Ok',
         });
@@ -83,7 +83,7 @@ const Login = () => {
          values,
      ).then((res)=>{
        console.log(res)
-       if(res.data === "Success"){
+       if(res?.data === "Success"){
          localStorage.setItem("isLogin","1")
         navigate("/person")
       }else{
@@ -100,7 +100,7 @@ const Login = () => {
   });
 
   return (
-    <div className= {`vh-100 bg-secondary `}>
+    <div className= {`vh-100 bg-secondary w-100`}>
       <div className="row justify-content-center align-items-center h-100">
         <div className="col-md-2 p-2">
           <div className="card">
@@ -109,8 +109,10 @@ const Login = () => {
             </div>
             <div className="card-body" style={{ backgroundColor: "cream" }}>
               <form onSubmit={formik.handleSubmit}>
+                
                 {!isLogin && (
                   <div className="mb-3">
+                    
                     <label htmlFor="name" className="form-label">
                       Name
                     </label>

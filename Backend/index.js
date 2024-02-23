@@ -1,11 +1,11 @@
 let db = require("./server");
 let express = require("express");
-
+const multer = require("multer");
+const fs = require("fs");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const salt = 10;
 
 
 
@@ -17,7 +17,39 @@ app.use(cors({
   methods:["POST","GET"],
   credentials: true,
 }));
+app.use("/uploads", express.static("./uploads"));
+
 app.use(cookieParser());
+
+
+
+
+const storage =  multer.diskStorage({
+  destination:(req,file,cb)=>{
+    cb(null,"./uploads")
+  },
+  filename:(req,file,cb)=>{
+    console.log("file--------->",file)
+    cb(null, `image-${Date.now()}.${file.originalname}`);
+    // cb(null,file.filename + "_"+ Date.now() + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({
+  storage : storage,
+})
+
+app.post("/upload",upload.single("image"),(req,res)=>{
+console.log(req.file)
+const image = req.file.filename;
+const id = req.body.id;
+const sql = "UPDATE login SET image = ? WHERE id = ?"
+db.query(sql,[image,id],(err,result)=>{
+  if(err) return res.json({Message:"Error"});
+  return res.json({Status:"Success"})
+})
+
+})
 
 const verifyUser = (req, res, next) => {
   const token = req.cookies.token;
@@ -45,6 +77,7 @@ app.get("/",verifyUser ,(req,res,next)=>{
 
 app.post("/signup", function (req, res) {
   const checkEmail = "SELECT * FROM login WHERE email = ?";
+ 
   const emailValues = [req.body.email];
 
   db.query(checkEmail, emailValues, (err, data) => {
@@ -56,8 +89,8 @@ app.post("/signup", function (req, res) {
       return res.status(400).json({msg:"Email already exists"});
     }
 
-    const sqlQuery = "INSERT INTO login (name, email, password) VALUES (?)";
-    const values = [req.body.name, req.body.email, req.body.password];
+    const sqlQuery = "INSERT INTO login (name, email, password,image) VALUES (?)";
+    const values = [req.body.name, req.body.email, req.body.password,"image-1708699082538.Imageprof.png"];
 
     db.query(sqlQuery, [values], (err, data) => {
       if (err) {

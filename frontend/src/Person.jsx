@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Person() {
+    const [file,setFile] = useState()
   const [currentPage, setCurrentPage] = useState(1);
   const [student, Setstudent] = useState();
   const [studentsPerPage] = useState(5);
@@ -11,6 +12,24 @@ function Person() {
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
   axios.defaults.withCredentials = true;
+
+  const handleFile = (e) =>{
+    setFile(e.target.files[0])
+  }
+
+  const handleUpload = (id)=>{
+    
+    const formdata= new FormData();
+    formdata.append("image",file);
+    formdata.append("id",id);
+    axios.post(`http://localhost:5000/upload`,formdata).then(res=>{
+        if(res.data.Status == "Success"){
+          console.log("Succedded")
+        }else{
+            console.log("Failed")
+        }
+    }).catch(err=> console.log(err))
+  }
   useEffect(() => {
     axios
       .get("http://localhost:5000")
@@ -67,22 +86,28 @@ function Person() {
             Logout
           </button>
           <div className="d-flex vh-100 bg-secondary justify-content-center align-items-center">
-            <div className="w-100 bg-white rounded">
+            <div className="w-50 bg-white rounded">
               {/* <button className="btn btn-primary">Add+</button> */}
               <table className="table">
                 <thead>
                   <tr>
                     <th>S.No</th>
+                    <th>ShowImage</th>
                     <th>Name</th>
                     <th>Email</th>
+                    
+                    <th>Image</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentStudents?.map((data, index) => (
                     <tr key={data.id}>
                       <td>{data.id}</td>
+                      <td><img className="w-50 h-50" src={`http://localhost:5000/uploads/${data.image}`} alt=""/></td>
                       <td>{data.name}</td>
                       <td>{data.email}</td>
+                      <td><input type="file" accept=".jpg, .jpeg, .png" onChange={handleFile}/></td>
+                      <td><button onClick={()=>handleUpload(data.id)}>Upload</button></td>
                     </tr>
                   ))}
                 </tbody>
