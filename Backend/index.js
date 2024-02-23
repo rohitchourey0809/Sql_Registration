@@ -4,7 +4,8 @@ let express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const salt = 10;
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 
 
@@ -93,7 +94,7 @@ app.post("/login", function (req, res) {
 });
 
 app.get("/userdata",(req,res)=>{
-  const sql = "SELECT * FROM userdata"
+  const sql = "SELECT * FROM login"
   db.query(sql,(err,data)=>{
     if(err) return res.json("Error")
     return res.json(data)
