@@ -1,14 +1,45 @@
 let db = require("./server");
 let express = require("express");
-let app = express();
+
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const salt = 10;
 
 
 
 
-
+let app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin:["http://localhost:3000"],
+  methods:["POST","GET"],
+  credentials: true,
+}));
+app.use(cookieParser());
+
+const verifyUser = (req, res, next) => {
+  const token = req.cookies.token;
+
+  if(!token) {
+    return res.json({Error : "You are not authenticated"})
+  }else{
+    jwt.verify(token,"jwt-secret-key",(err,decoded)=>{
+      if(err){
+        return res.json({Error : "Token is not correct"})
+      }else{
+        req.name = decoded.name;
+        next();
+      }
+    })
+  }
+};
+
+app.get("/",verifyUser ,(req,res,next)=>{
+  console.log("res39",req)
+  return res.json({Status:"Success",name:req.name})
+
+})
 
 
 app.post("/signup", function (req, res) {
@@ -48,12 +79,32 @@ app.post("/login", function (req, res) {
       return res.json(err);
     }
     if (data.length > 0) {
+      console.log("data--------------->",data)
+      if(res){
+        const name = data[0].name;
+        const token = jwt.sign({name},'jwt-secret-key',{expiresIn : "1d"})
+        res.cookie("token",token)
+      }
       return res.json("Success");
     } else {
       return res.json("fail");
     }
   });
 });
+
+app.get("/userdata",(req,res)=>{
+  const sql = "SELECT * FROM userdata"
+  db.query(sql,(err,data)=>{
+    if(err) return res.json("Error")
+    return res.json(data)
+  })
+})
+
+app.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  return res.json({Status:"Success"})
+})
+
 
 db.connect(function (error) {
     if (error) {

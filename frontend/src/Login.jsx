@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
  const navigate = useNavigate()
+ axios.defaults.withCredentials = true;
   const validationSchema = Yup.object().shape({
     name: isLogin
       ? null
@@ -99,8 +100,8 @@ const Login = () => {
   });
 
   return (
-    <div className= {`vh-100 bg-secondary`}>
-      <div className="row justify-content-center align-items-center h-80">
+    <div className= {`vh-100 bg-secondary `}>
+      <div className="row justify-content-center align-items-center h-100">
         <div className="col-md-2 p-2">
           <div className="card">
             <div className="card-header">
