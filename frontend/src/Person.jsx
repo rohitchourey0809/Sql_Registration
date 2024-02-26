@@ -80,13 +80,15 @@ function Person() {
   return (
     <div className="container mt-4">
       {auth ? (
-        <div>
-          <h3>You are Authorized {name}</h3>
+        <div >
+         <div className="d-flex justify-content-between">
+           <div><h3 style={{ color: 'blue' }}>You are authorized - {name}</h3></div>
           <button className="btn btn-danger" onClick={handleDelete}>
             Logout
           </button>
+          </div>
           <div className="d-flex vh-100 bg-secondary justify-content-center align-items-center">
-            <div className="w-50 bg-white rounded">
+            <div className="w-80 bg-white rounded">
               {/* <button className="btn btn-primary">Add+</button> */}
               <table className="table">
                 <thead>

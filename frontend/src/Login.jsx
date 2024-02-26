@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import axios from "axios";
 import Swal from 'sweetalert2';
-
+import "./Login.css"
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
@@ -100,14 +100,14 @@ const Login = () => {
   });
 
   return (
-    <div className= {`vh-100 bg-secondary w-100`}>
-      <div className="row justify-content-center align-items-center h-100">
-        <div className="col-md-2 p-2">
-          <div className="card">
+    <div  className= {`vh-100 bg-dark`}>
+      <div className="vh-100 row justify-content-center align-items-center">
+        <div className="col-md-2 p-2 w-50">
+          <div className="card w-100 h-50 p-3 rounded interactive-div">
             <div className="card-header">
               <h3>{isLogin ? "Login" : "Sign Up"}</h3>
             </div>
-            <div className="card-body" style={{ backgroundColor: "cream" }}>
+            <div className="card-body" style={{ backgroundColor: "#f8f9fa" }}>
               <form onSubmit={formik.handleSubmit}>
                 
                 {!isLogin && (
