@@ -13,7 +13,14 @@ function Person() {
   const [name, setName] = useState("");
   axios.defaults.withCredentials = true;
 
+   // Retrieve currentPage from local storage on component mount
+   useEffect(() => {
+    const storedPage = localStorage.getItem("currentPage");
+    setCurrentPage(storedPage ? parseInt(storedPage, 10) : 1);
+  }, []);
+
   const handleFile = (e) =>{
+   
     setFile(e.target.files[0])
   }
 
@@ -25,6 +32,9 @@ function Person() {
     axios.post(`http://localhost:5000/upload`,formdata).then(res=>{
         if(res.data.Status == "Success"){
           console.log("Succedded")
+           // Save currentPage to local storage after successful upload
+          localStorage.setItem("currentPage", currentPage.toString());
+          window.location.reload();
         }else{
             console.log("Failed")
         }
@@ -65,7 +75,11 @@ function Person() {
   );
 
   // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber)
+    
+    localStorage.setItem("currentPage", pageNumber.toString());
+  };
 
   console.log("data------------>", student);
 
@@ -82,13 +96,13 @@ function Person() {
       {auth ? (
         <div >
          <div className="d-flex justify-content-between">
-           <div><h3 style={{ color: 'blue' }}>You are authorized - {name}</h3></div>
+           <div><h3 style={{ color: 'blue' }}>You Are Authorized - {name}</h3></div>
           <button className="btn btn-danger" onClick={handleDelete}>
             Logout
           </button>
           </div>
-          <div className="d-flex vh-100 bg-secondary justify-content-center align-items-center">
-            <div className="w-80 bg-white rounded">
+          <div className="d-flex vh-100 justify-content-center align-items-center border border-danger p-3 mt-20">
+            <div className="w-80 bg-white rounded mt-5">
               {/* <button className="btn btn-primary">Add+</button> */}
               <table className="table">
                 <thead>
@@ -105,17 +119,17 @@ function Person() {
                   {currentStudents?.map((data, index) => (
                     <tr key={data.id}>
                       <td>{data.id}</td>
-                      <td><img className="w-50 h-50" src={`http://localhost:5000/uploads/${data.image}`} alt=""/></td>
+                      <td><img style={{ width: '50px', height: '50px' }}  src={`http://localhost:5000/uploads/${data.image}`} alt=""/></td>
                       <td>{data.name}</td>
                       <td>{data.email}</td>
                       <td><input type="file" accept=".jpg, .jpeg, .png" onChange={handleFile}/></td>
-                      <td><button onClick={()=>handleUpload(data.id)}>Upload</button></td>
+                      <td><button className="btn btn-primary" onClick={()=>handleUpload(data.id)}>Upload</button></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {/* Pagination */}
-              <ul className="pagination">
+              <ul className="pagination mt-3">
                 {Array.from(
                   { length: Math.ceil(student?.length / studentsPerPage) },
                   (_, index) => (
