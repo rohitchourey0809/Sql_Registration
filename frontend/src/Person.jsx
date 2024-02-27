@@ -101,8 +101,8 @@ function Person() {
             Logout
           </button>
           </div>
-          <div className="d-flex vh-100 justify-content-center align-items-center border border-danger p-3 mt-20">
-            <div className="w-80 bg-white rounded mt-5">
+          <div className="d-flex vh-80 justify-content-center align-items-center border border-danger p-3">
+            <div className="w-8 bg-white rounded">
               {/* <button className="btn btn-primary">Add+</button> */}
               <table className="table">
                 <thead>
