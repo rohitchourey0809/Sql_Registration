@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Person() {
-    const [file,setFile] = useState()
+  const [file, setFile] = useState();
   const [currentPage, setCurrentPage] = useState(1);
   const [student, Setstudent] = useState();
   const [studentsPerPage] = useState(5);
@@ -11,35 +11,48 @@ function Person() {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  const handleSort = (columnName) => {
+    setSortBy(columnName);
+    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+  };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   axios.defaults.withCredentials = true;
 
-   // Retrieve currentPage from local storage on component mount
-   useEffect(() => {
+  useEffect(() => {
     const storedPage = localStorage.getItem("currentPage");
     setCurrentPage(storedPage ? parseInt(storedPage, 10) : 1);
   }, []);
 
-  const handleFile = (e) =>{
-   
-    setFile(e.target.files[0])
-  }
+  const handleFile = (e) => {
+    setFile(e.target.files[0]);
+  };
 
-  const handleUpload = (id)=>{
-    
-    const formdata= new FormData();
-    formdata.append("image",file);
-    formdata.append("id",id);
-    axios.post(`http://localhost:5000/upload`,formdata).then(res=>{
-        if(res.data.Status == "Success"){
-          console.log("Succedded")
-           // Save currentPage to local storage after successful upload
+  const handleUpload = (id) => {
+    const formdata = new FormData();
+    formdata.append("image", file);
+    formdata.append("id", id);
+    axios
+      .post(`http://localhost:5000/upload`, formdata)
+      .then((res) => {
+        if (res.data.Status === "Success") {
+          console.log("Succeeded");
           localStorage.setItem("currentPage", currentPage.toString());
           window.location.reload();
-        }else{
-            console.log("Failed")
+        } else {
+          console.log("Failed");
         }
-    }).catch(err=> console.log(err))
-  }
+      })
+      .catch((err) => console.log(err));
+  };
+
   useEffect(() => {
     axios
       .get("http://localhost:5000")
@@ -52,36 +65,22 @@ function Person() {
         } else {
           setAuth(false);
           setMessage(res.data.Error);
-          // alert("Error")
         }
       })
-      .then((err) => console.log(err));
+      .catch((err) => console.log(err));
   }, []);
 
   useEffect(() => {
     axios
       .get("http://localhost:5000/userdata")
       .then((res) => Setstudent(res.data))
-      //    console.log("result----->",res))
       .catch((err) => console.log(err));
   }, []);
 
-  // Get current students
-  const indexOfLastStudent = currentPage * studentsPerPage;
-  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = student?.slice(
-    indexOfFirstStudent,
-    indexOfLastStudent
-  );
-
-  // Change page
   const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber)
-    
+    setCurrentPage(pageNumber);
     localStorage.setItem("currentPage", pageNumber.toString());
   };
-
-  console.log("data------------>", student);
 
   const handleDelete = () => {
     axios
@@ -91,27 +90,69 @@ function Person() {
       })
       .catch((err) => console.log(err));
   };
+
+  // Filter and sort students
+  const filteredStudents = (student || [])?.filter(
+    (data) =>
+      data.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      data.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    const factor = sortOrder === "asc" ? 1 : -1;
+    switch (sortBy) {
+      case "id":
+        return factor * (a.id - b.id);
+      case "name":
+        return factor * a.name.localeCompare(b.name);
+      case "email":
+        return factor * a.email.localeCompare(b.email);
+      // Add more cases for other sortable columns if needed
+      default:
+        return 0;
+    }
+  });
+
+  // Get current students
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = sortedStudents?.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
+
   return (
     <div className="container mt-4">
       {auth ? (
-        <div >
-         <div className="d-flex justify-content-between">
-           <div><h3 style={{ color: 'blue' }}>You Are Authorized - {name}</h3></div>
-          <button className="btn btn-danger" onClick={handleDelete}>
-            Logout
-          </button>
+        <div>
+          <div className="d-flex justify-content-between">
+            <div>
+              <h3 style={{ color: "blue" }}>You Are Authorized - {name}</h3>
+            </div>
+            <button className="btn btn-danger" onClick={handleDelete}>
+              Logout
+            </button>
           </div>
-          <div className="d-flex vh-80 justify-content-center align-items-center border border-danger p-3">
+          <div className="d-flex vh-80 justify-content-center align-items-center p-3">
             <div className="w-8 bg-white rounded">
-              {/* <button className="btn btn-primary">Add+</button> */}
+              <div>
+                <div className="form-group mt-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search by name or email"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </div>
+              </div>
               <table className="table">
                 <thead>
                   <tr>
-                    <th>S.No</th>
-                    <th>ShowImage</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    
+                    <th onClick={() => handleSort("id")}>S.No</th>
+                    <th onClick={() => handleSort("image")}>ShowImage</th>
+                    <th onClick={() => handleSort("name")}>Name</th>
+                    <th onClick={() => handleSort("email")}>Email</th>
                     <th>Image</th>
                   </tr>
                 </thead>
@@ -119,11 +160,30 @@ function Person() {
                   {currentStudents?.map((data, index) => (
                     <tr key={data.id}>
                       <td>{data.id}</td>
-                      <td><img style={{ width: '50px', height: '50px' }}  src={`http://localhost:5000/uploads/${data.image}`} alt=""/></td>
+                      <td>
+                        <img
+                          style={{ width: "50px", height: "50px" }}
+                          src={`http://localhost:5000/uploads/${data.image}`}
+                          alt=""
+                        />
+                      </td>
                       <td>{data.name}</td>
                       <td>{data.email}</td>
-                      <td><input type="file" accept=".jpg, .jpeg, .png" onChange={handleFile}/></td>
-                      <td><button className="btn btn-primary" onClick={()=>handleUpload(data.id)}>Upload</button></td>
+                      <td>
+                        <input
+                          type="file"
+                          accept=".jpg, .jpeg, .png"
+                          onChange={handleFile}
+                        />
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleUpload(data.id)}
+                        >
+                          Upload
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -131,7 +191,7 @@ function Person() {
               {/* Pagination */}
               <ul className="pagination mt-3">
                 {Array.from(
-                  { length: Math.ceil(student?.length / studentsPerPage) },
+                  { length: Math.ceil(sortedStudents?.length / studentsPerPage) },
                   (_, index) => (
                     <li
                       key={index}
